@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#050505">
+
+<title>Velo — TikTok Video Downloader</title>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+:root{
+    --bg:#030304;
+    --panel:#0b0b0e;
+    --panel2:#101014;
+    --text:#ffffff;
+    --muted:#85858e;
+    --line:rgba(255,255,255,.09);
+    --pink:#ff2d55;
+    --purple:#7c3cff;
+    --cyan:#35d9ff;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    min-height:100vh;
+    color:var(--text);
+    background:
+        radial-gradient(
+            circle at 50% -15%,
+            rgba(255,45,85,.20),
+            transparent 32%
+        ),
+        radial-gradient(
+            circle at 85% 35%,
+            rgba(124,60,255,.10),
+            transparent 25%
+        ),
+        var(--bg);
+    font-family:Inter,Arial,sans-serif;
+    overflow-x:hidden;
+}
+
+/* =========================
+   BACKGROUND
+========================= */
+
+.noise{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:.035;
+    z-index:20;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.orb{
+    position:fixed;
+    width:450px;
+    height:450px;
+    border-radius:50%;
+    filter:blur(120px);
+    opacity:.09;
+    pointer-events:none;
+    z-index:-1;
+}
+
+.orb.one{
+    background:#ff174f;
+    top:-250px;
+    left:-150px;
+}
+
+.orb.two{
+    background:#673cff;
+    right:-250px;
+    top:30%;
+}
+
+.grid{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:.035;
+    background-image:
+        linear-gradient(rgba(255,255,255,.3) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.3) 1px,transparent 1px);
+    background-size:70px 70px;
+    mask-image:linear-gradient(to bottom,#000,transparent 70%);
+}
+
+/* =========================
+   NAV
+========================= */
+
+nav{
+    width:min(1180px,92%);
+    height:82px;
+    margin:auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    font-weight:900;
+    font-size:21px;
+    letter-spacing:-.7px;
+}
+
+.brand-icon{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:
+        linear-gradient(135deg,var(--pink),var(--purple));
+    box-shadow:
+        0 8px 35px rgba(255,45,85,.25);
+}
+
+.nav-right{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.nav-pill{
+    padding:8px 13px;
+    border:1px solid var(--line);
+    border-radius:30px;
+    background:rgba(255,255,255,.025);
+    color:#999;
+    font-size:11px;
+}
+
+.status{
+    display:flex;
+    align-items:center;
+    gap:6px;
+}
+
+.status-dot{
+    width:6px;
+    height:6px;
+    background:#35e890;
+    border-radius:50%;
+    box-shadow:0 0 12px #35e890;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero{
+    width:min(950px,92%);
+    margin:90px auto 0;
+    text-align:center;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 14px;
+    border-radius:100px;
+    border:1px solid rgba(255,255,255,.1);
+    background:rgba(255,255,255,.035);
+    color:#aaa;
+    font-size:11px;
+    backdrop-filter:blur(15px);
+    animation:fadeDown .7s ease;
+}
+
+.badge b{
+    color:#fff;
+}
+
+h1{
+    margin-top:28px;
+    font-size:clamp(50px,9vw,96px);
+    line-height:.92;
+    letter-spacing:-6px;
+    font-weight:900;
+    animation:heroIn .8s ease;
+}
+
+.gradient{
+    background:
+        linear-gradient(
+            100deg,
+            #fff 10%,
+            #ff5274 45%,
+            #9c70ff 80%
+        );
+    -webkit-background-clip:text;
+    color:transparent;
+}
+
+.hero-description{
+    max-width:620px;
+    margin:27px auto 0;
+    color:#7f7f88;
+    font-size:16px;
+    line-height:1.75;
+    animation:fadeUp .9s ease;
+}
+
+/* =========================
+   DOWNLOADER
+========================= */
+
+.download-area{
+    margin:45px auto 0;
+    width:min(790px,100%);
+    position:relative;
+}
+
+.download-box{
+    display:flex;
+    align-items:center;
+    padding:8px;
+    min-height:72px;
+    border-radius:20px;
+    border:1px solid rgba(255,255,255,.12);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.07),
+            rgba(255,255,255,.025)
+        );
+    box-shadow:
+        0 30px 90px rgba(0,0,0,.55),
+        inset 0 1px rgba(255,255,255,.05);
+    backdrop-filter:blur(25px);
+    transition:.35s;
+}
+
+.download-box:focus-within{
+    border-color:rgba(255,45,85,.4);
+    box-shadow:
+        0 30px 100px rgba(0,0,0,.6),
+        0 0 45px rgba(255,45,85,.08);
+}
+
+.link{
+    padding-left:18px;
+    color:#777;
+    font-size:19px;
+}
+
+input{
+    flex:1;
+    min-width:0;
+    border:0;
+    outline:0;
+    background:transparent;
+    color:#fff;
+    font-size:14px;
+    padding:0 14px;
+}
+
+input::placeholder{
+    color:#62626b;
+}
+
+.paste{
+    padding:11px 13px;
+    border:0;
+    border-radius:10px;
+    color:#aaa;
+    background:rgba(255,255,255,.055);
+    cursor:pointer;
+    font-size:11px;
+    font-weight:700;
+    margin-right:7px;
+}
+
+.main-btn{
+    height:55px;
+    padding:0 25px;
+    border:0;
+    border-radius:14px;
+    color:#fff;
+    font-weight:800;
+    font-size:13px;
+    cursor:pointer;
+    background:
+        linear-gradient(135deg,#ff3157,#e71969);
+    box-shadow:
+        0 10px 30px rgba(255,45,85,.25);
+    transition:.25s;
+}
+
+.main-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:
+        0 15px 40px rgba(255,45,85,.35);
+}
+
+.main-btn:active{
+    transform:scale(.97);
+}
+
+/* =========================
+   RESULT
+========================= */
+
+.result{
+    display:none;
+    margin-top:15px;
+    padding:15px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:rgba(11,11,14,.94);
+    text-align:left;
+    animation:resultIn .4s ease;
+}
+
+.result.show{
+    display:flex;
+    gap:15px;
+    align-items:center;
+}
+
+.thumbnail{
+    width:72px;
+    height:92px;
+    border-radius:12px;
+    display:grid;
+    place-items:center;
+    background:
+        linear-gradient(
+            145deg,
+            #17171c,
+            #050505
+        );
+    border:1px solid var(--line);
+    font-size:25px;
+}
+
+.result-content{
+    flex:1;
+}
+
+.result-title{
+    font-weight:800;
+    font-size:13px;
+}
+
+.result-meta{
+    margin-top:7px;
+    color:#707079;
+    font-size:11px;
+}
+
+.download-options{
+    display:flex;
+    gap:7px;
+    margin-top:11px;
+}
+
+.option{
+    padding:7px 10px;
+    border-radius:7px;
+    border:1px solid var(--line);
+    background:rgba(255,255,255,.035);
+    color:#aaa;
+    font-size:10px;
+}
+
+.save{
+    border:0;
+    padding:12px 17px;
+    border-radius:10px;
+    background:#fff;
+    color:#000;
+    font-weight:800;
+    cursor:pointer;
+}
+
+/* =========================
+   TRUST
+========================= */
+
+.trust{
+    margin-top:18px;
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    color:#55555d;
+    font-size:10px;
+}
+
+.trust span{
+    display:flex;
+    align-items:center;
+    gap:5px;
+}
+
+/* =========================
+   FEATURES
+========================= */
+
+.features{
+    width:min(1000px,92%);
+    margin:80px auto 0;
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:13px;
+}
+
+.card{
+    position:relative;
+    padding:26px;
+    min-height:175px;
+    border-radius:19px;
+    border:1px solid var(--line);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.045),
+            rgba(255,255,255,.015)
+        );
+    overflow:hidden;
+    transition:.35s;
+}
+
+.card::after{
+    content:"";
+    position:absolute;
+    width:100px;
+    height:100px;
+    right:-60px;
+    bottom:-60px;
+    background:var(--pink);
+    filter:blur(60px);
+    opacity:.08;
+}
+
+.card:hover{
+    transform:translateY(-6px);
+    border-color:rgba(255,255,255,.15);
+}
+
+.icon{
+    width:43px;
+    height:43px;
+    display:grid;
+    place-items:center;
+    border-radius:13px;
+    background:rgba(255,255,255,.06);
+    font-size:19px;
+    margin-bottom:22px;
+}
+
+.card h3{
+    font-size:14px;
+    margin-bottom:8px;
+}
+
+.card p{
+    color:#686871;
+    font-size:11px;
+    line-height:1.7;
+}
+
+/* =========================
+   STATS
+========================= */
+
+.stats{
+    width:min(800px,92%);
+    margin:70px auto 0;
+    padding:25px;
+    border-top:1px solid var(--line);
+    border-bottom:1px solid var(--line);
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    text-align:center;
+}
+
+.stat strong{
+    font-size:24px;
+    font-weight:900;
+}
+
+.stat span{
+    display:block;
+    margin-top:5px;
+    color:#65656d;
+    font-size:10px;
+}
+
+/* =========================
+   HOW
+========================= */
+
+.how{
+    width:min(1000px,92%);
+    margin:110px auto 0;
+    text-align:center;
+}
+
+.kicker{
+    color:#ff5575;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+.section-title{
+    margin-top:13px;
+    font-size:34px;
+    letter-spacing:-2px;
+}
+
+.section-description{
+    color:#6d6d75;
+    font-size:13px;
+    margin-top:10px;
+}
+
+.steps{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px;
+    margin-top:40px;
+}
+
+.step{
+    padding:28px 22px;
+    border:1px solid var(--line);
+    border-radius:18px;
+    background:rgba(255,255,255,.018);
+}
+
+.number{
+    width:38px;
+    height:38px;
+    display:grid;
+    place-items:center;
+    margin:0 auto 17px;
+    border-radius:50%;
+    font-size:12px;
+    font-weight:900;
+    background:linear-gradient(135deg,var(--pink),var(--purple));
+}
+
+.step h3{
+    font-size:14px;
+}
+
+.step p{
+    margin-top:8px;
+    color:#686871;
+    font-size:11px;
+    line-height:1.65;
+}
+
+/* =========================
+   FAQ
+========================= */
+
+.faq{
+    width:min(700px,92%);
+    margin:110px auto 0;
+}
+
+.faq-title{
+    text-align:center;
+    font-size:30px;
+    letter-spacing:-1.5px;
+    margin-bottom:30px;
+}
+
+details{
+    border-bottom:1px solid var(--line);
+}
+
+summary{
+    list-style:none;
+    cursor:pointer;
+    padding:20px 3px;
+    font-size:13px;
+    font-weight:700;
+}
+
+summary::-webkit-details-marker{
+    display:none;
+}
+
+.answer{
+    padding:0 3px 20px;
+    color:#707079;
+    font-size:12px;
+    line-height:1.7;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer{
+    width:min(1000px,92%);
+    margin:100px auto 25px;
+    padding-top:25px;
+    border-top:1px solid var(--line);
+    display:flex;
+    justify-content:space-between;
+    color:#505057;
+    font-size:10px;
+}
+
+/* =========================
+   TOAST
+========================= */
+
+.toast{
+    position:fixed;
+    left:50%;
+    bottom:25px;
+    transform:translate(-50%,20px);
+    padding:12px 17px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#111116;
+    color:#ddd;
+    font-size:11px;
+    opacity:0;
+    pointer-events:none;
+    transition:.3s;
+    z-index:50;
+}
+
+.toast.show{
+    opacity:1;
+    transform:translate(-50%,0);
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes heroIn{
+    from{
+        opacity:0;
+        transform:translateY(25px) scale(.98);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+@keyframes fadeUp{
+    from{
+        opacity:0;
+        transform:translateY(18px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+@keyframes fadeDown{
+    from{
+        opacity:0;
+        transform:translateY(-12px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+@keyframes resultIn{
+    from{
+        opacity:0;
+        transform:translateY(8px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:700px){
+
+    nav{
+        height:70px;
+    }
+
+    .nav-pill{
+        display:none;
+    }
+
+    .hero{
+        margin-top:65px;
+    }
+
+    h1{
+        font-size:52px;
+        letter-spacing:-4px;
+    }
+
+    .hero-description{
+        font-size:13px;
+    }
+
+    .download-box{
+        flex-wrap:wrap;
+        padding:8px;
+    }
+
+    .link{
+        padding-left:13px;
+    }
+
+    input{
+        height:52px;
+    }
+
+    .paste{
+        display:none;
+    }
+
+    .main-btn{
+        width:100%;
+    }
+
+    .result.show{
+        flex-wrap:wrap;
+    }
+
+    .result-content{
+        min-width:calc(100% - 90px);
+    }
+
+    .save{
+        width:100%;
+    }
+
+    .features,
+    .steps{
+        grid-template-columns:1fr;
+    }
+
+    .features{
+        margin-top:55px;
+    }
+
+    .stats{
+        grid-template-columns:1fr;
+        gap:25px;
+    }
+
+    .trust{
+        flex-wrap:wrap;
+    }
+
+    footer{
+        justify-content:center;
+        text-align:center;
+    }
+
+    footer span:last-child{
+        display:none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="noise"></div>
+<div class="grid"></div>
+
+<div class="orb one"></div>
+<div class="orb two"></div>
+
+<nav>
+
+    <div class="brand">
+        <div class="brand-icon">▶</div>
+        Velo
+    </div>
+
+    <div class="nav-right">
+
+        <div class="nav-pill">
+            <div class="status">
+                <span class="status-dot"></span>
+                Systems operational
+            </div>
+        </div>
+
+        <div class="nav-pill">
+            Free
+        </div>
+
+    </div>
+
+</nav>
+
+
+<main>
+
+<section class="hero">
+
+    <div class="badge">
+        <span class="status-dot"></span>
+        <b>Fast.</b> Simple. No clutter.
+    </div>
+
+    <h1>
+        Save the moment.<br>
+        <span class="gradient">Keep it forever.</span>
+    </h1>
+
+    <p class="hero-description">
+        A clean and powerful TikTok video downloader built
+        for speed, simplicity and a beautiful experience.
+    </p>
+
+
+    <div class="download-area">
+
+        <div class="download-box">
+
+            <span class="link">🔗</span>
+
+            <input
+                id="url"
+                type="url"
+                placeholder="Paste TikTok video link..."
+                autocomplete="off"
+            >
+
+            <button class="paste" onclick="pasteLink()">
+                Paste
+            </button>
+
+            <button class="main-btn" onclick="analyze()">
+                Download
+            </button>
+
+        </div>
+
+
+        <div class="result" id="result">
+
+            <div class="thumbnail">
+                ▶
+            </div>
+
+            <div class="result-content">
+
+                <div class="result-title">
+                    Video ready to download
+                </div>
+
+                <div class="result-meta">
+                    TikTok video • Ready
+                </div>
+
+                <div class="download-options">
+                    <span class="option">HD</span>
+                    <span class="option">MP4</span>
+                    <span class="option">Fast</span>
+                </div>
+
+            </div>
+
+            <button class="save" onclick="saveVideo()">
+                Save
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="trust">
+
+        <span>✓ No registration</span>
+        <span>✓ Mobile friendly</span>
+        <span>✓ Simple interface</span>
+
+    </div>
+
+</section>
+
+
+<section class="features">
+
+    <div class="card">
+
+        <div class="icon">⚡</div>
+
+        <h3>Lightning fast</h3>
+
+        <p>
+            Designed around a simple workflow so
+            you can go from link to download quickly.
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="icon">◉</div>
+
+        <h3>Beautiful everywhere</h3>
+
+        <p>
+            Responsive design that feels natural
+            on phones, tablets and desktop screens.
+        </p>
+
+    </div>
+
+
+    <div class="card">
+
+        <div class="icon">◇</div>
+
+        <h3>Zero clutter</h3>
+
+        <p>
+            No unnecessary screens. One link,
+            one action and a clear result.
+        </p>
+
+    </div>
+
+</section>
+
+
+<section class="stats">
+
+    <div class="stat">
+        <strong>4K</strong>
+        <span>Ready for high quality workflows</span>
+    </div>
+
+    <div class="stat">
+        <strong>24/7</strong>
+        <span>Available anytime</span>
+    </div>
+
+    <div class="stat">
+        <strong>1 Click</strong>
+        <span>Simple download experience</span>
+    </div>
+
+</section>
+
+
+<section class="how">
+
+    <div class="kicker">
+        How it works
+    </div>
+
+    <h2 class="section-title">
+        Three seconds. Three steps.
+    </h2>
+
+    <p class="section-description">
+        We removed everything you don't need.
+    </p>
+
+
+    <div class="steps">
+
+        <div class="step">
+
+            <div class="number">01</div>
+
+            <h3>Copy</h3>
+
+            <p>
+                Copy the TikTok video link
+                from the TikTok application.
+            </p>
+
+        </div>
+
+
+        <div class="step">
+
+            <div class="number">02</div>
+
+            <h3>Paste</h3>
+
+            <p>
+                Paste the URL into the
+                downloader above.
+            </p>
+
+        </div>
+
+
+        <div class="step">
+
+            <div class="number">03</div>
+
+            <h3>Save</h3>
+
+            <p>
+                Choose the available format
+                and save your video.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<section class="faq">
+
+    <h2 class="faq-title">
+        Frequently asked questions
+    </h2>
+
+    <details>
+        <summary>How does Velo work?</summary>
+
+        <div class="answer">
+            Paste a supported TikTok video URL into
+            the downloader and the connected backend
+            can process the request.
+        </div>
+    </details>
+
+
+    <details>
+        <summary>Does this page download videos by itself?</summary>
+
+        <div class="answer">
+            This HTML file provides the complete
+            frontend experience. A backend/API is
+            required for actual video processing.
+        </div>
+    </details>
+
+
+    <details>
+        <summary>Does it work on mobile?</summary>
+
+        <div class="answer">
+            Yes. The interface is designed mobile-first
+            and adapts automatically to smaller screens.
+        </div>
+    </details>
+
+</section>
+
+</main>
+
+
+<footer>
+
+    <span>© 2026 Velo</span>
+
+    <span>
+        Built for a faster web.
+    </span>
+
+</footer>
+
+
+<div class="toast" id="toast"></div>
+
+
+<script>
+
+const input = document.getElementById("url");
+const result = document.getElementById("result");
+const toast = document.getElementById("toast");
+
+
+function showToast(message){
+
+    toast.textContent = message;
+    toast.classList.add("show");
+
+    setTimeout(()=>{
+        toast.classList.remove("show");
+    },2200);
+
+}
+
+
+async function pasteLink(){
+
+    try{
+
+        const text = await navigator.clipboard.readText();
+
+        if(!text){
+            showToast("Clipboard is empty");
+            return;
+        }
+
+        input.value = text;
+
+        input.focus();
+
+        showToast("Link pasted");
+
+    }catch{
+
+        showToast("Please paste the link manually");
+
+    }
+
+}
+
+
+function analyze(){
+
+    const url = input.value.trim();
+
+    if(!url){
+
+        input.focus();
+
+        showToast("Paste a TikTok link first");
+
+        return;
+    }
+
+    if(!url.includes("tiktok.com")){
+
+        showToast("Please enter a TikTok URL");
+
+        return;
+    }
+
+    result.classList.add("show");
+
+    result.scrollIntoView({
+        behavior:"smooth",
+        block:"center"
+    });
+
+}
+
+
+/*
+    Connect your real backend here.
+
+    Example:
+
+    fetch("/api/download",{
+        method:"POST",
+        headers:{
+            "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+            url:input.value
+        })
+    });
+
+*/
+
+
+function saveVideo(){
+
+    showToast(
+        "Connect your download API/backend here"
+    );
+
+}
+
+
+/* subtle mouse interaction */
+
+document.addEventListener("mousemove",(e)=>{
+
+    const x = e.clientX / window.innerWidth;
+    const y = e.clientY / window.innerHeight;
+
+    document.querySelector(".orb.one").style.transform =
+        `translate(${x * 25}px,${y * 15}px)`;
+
+    document.querySelector(".orb.two").style.transform =
+        `translate(${-x * 20}px,${-y * 15}px)`;
+
+});
+
+
+/* Enter key */
+
+input.addEventListener("keydown",(e)=>{
+
+    if(e.key === "Enter"){
+        analyze();
+    }
+
+});
+
+</script>
+
+</body>
+</html>
