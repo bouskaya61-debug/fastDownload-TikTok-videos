@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProDown - محمل فيديوهات بنترست وتيكتوك</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* خلفية الموقع العامة باستعمال RGB */
+        body {
+            background-color: rgb(13, 13, 13);
+            color: rgb(255, 255, 255);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* إطار الهاتف المطور بألوان RGB */
+        .iphone-frame {
+            background-color: rgb(22, 22, 24);
+            border-radius: 48px;
+            padding: 20px;
+            border: 2px solid rgb(44, 44, 46);
+            box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.9);
+            width: 100%;
+            max-width: 390px;
+            position: relative;
+        }
+
+        .dynamic-island {
+            width: 100px;
+            height: 26px;
+            background-color: rgb(0, 0, 0);
+            border-radius: 20px;
+            margin: 0 auto 15px auto;
+        }
+
+        h1 {
+            font-size: 18px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: rgb(255, 255, 255);
+        }
+        
+        /* محول المنصات بألوان RGB */
+        .platform-switcher {
+            display: flex;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .platform-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            color: rgb(142, 142, 147);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .platform-btn.active.pinterest {
+            background-color: rgb(189, 8, 28);
+            color: rgb(255, 255, 255);
+        }
+
+        .platform-btn.active.tiktok {
+            background: linear-gradient(135deg, rgb(255, 0, 80), rgb(0, 242, 254));
+            color: rgb(255, 255, 255);
+        }
+
+        .input-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 15px;
+            border-radius: 12px;
+            border: 1px solid rgb(44, 44, 46);
+            background-color: rgb(36, 36, 38);
+            color: rgb(255, 255, 255);
+            font-size: 13px;
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .paste-btn {
+            position: absolute;
+            left: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: rgb(255, 255, 255);
+            padding: 5px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        /* زر التحميل والتدرجات */
+        .submit-btn {
+            position: relative;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            color: rgb(255, 255, 255);
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            overflow: hidden;
+            margin-bottom: 20px;
+            transition: 0.3s;
+        }
+
+        .submit-btn.pinterest {
+            background-color: rgb(189, 8, 28);
+        }
+
+        .submit-btn.tiktok {
+            background: linear-gradient(90deg, rgb(255, 0, 80), rgb(0, 242, 254));
+        }
+
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -150%;
+            width: 50%;
+            height: 200%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            transform: rotate(25deg);
+            animation: slowShine 6s infinite ease-in-out;
+        }
+
+        @keyframes slowShine {
+            0% { left: -150%; }
+            50% { left: 150%; }
+            100% { left: 150%; }
+        }
+
+        /* كارت النتيجة بألوان RGB */
+        .result-card {
+            display: none;
+            background-color: rgb(36, 36, 38);
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .author-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .author-info img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
+
+        .author-details h4 {
+            font-size: 13px;
+            font-weight: 600;
+            color: rgb(255, 255, 255);
+        }
+
+        .author-details span {
+            font-size: 11px;
+            color: rgb(142, 142, 147);
+        }
+
+        .video-title {
+            font-size: 12px;
+            color: rgb(209, 209, 214);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        /* أزرار التحميل المباشر */
+        .dl-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 11px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            margin-bottom: 8px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: rgb(255, 255, 255);
+            transition: 0.2s;
+        }
+
+        .dl-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .dl-btn.hq-btn {
+            background-color: rgb(255, 255, 255);
+            color: rgb(0, 0, 0);
+            font-weight: 600;
+        }
+
+        .dl-btn.hq-btn:hover {
+            background-color: rgb(229, 229, 234);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="iphone-frame">
+        <div class="dynamic-island"></div>
+
+        <h1><i class="fa-solid fa-cloud-arrow-down"></i> ProDown</h1>
+        
+        <!-- اختيار المنصة -->
+        <div class="platform-switcher">
+            <button class="platform-btn active pinterest" onclick="setPlatform('pinterest')" id="btnPinterest">
+                <i class="fa-brands fa-pinterest"></i> بنترست
+            </button>
+            <button class="platform-btn tiktok" onclick="setPlatform('tiktok')" id="btnTiktok">
+                <i class="fa-brands fa-tiktok"></i> تيكتوك
+            </button>
+        </div>
+        
+        <div class="input-wrapper">
+            <input type="text" id="videoUrl" placeholder="الصق رابط فيديو بنترست هنا...">
+            <button class="paste-btn" onclick="pasteURL()">لصق</button>
+        </div>
+
+        <button class="submit-btn pinterest" id="submitBtn" onclick="fetchVideo()">
+            تحميل الفيديو بأعلى جودة HD
+        </button>
+
+        <!-- كارت النتيجة -->
+        <div class="result-card" id="resultCard">
+            <div class="author-info">
+                <img id="avatar" src="https://www.google.com/s2/favicons?domain=pinterest.com&sz=36" alt="Pinterest">
+                <div class="author-details">
+                    <h4 id="authorName">فيديو بنترست</h4>
+                    <span id="authorHandle">@pinterest</span>
+                </div>
+            </div>
+            <p class="video-title" id="videoTitle">جاهز للتحميل بأعلى جودة بدون علامة مائية.</p>
+
+            <button class="dl-btn hq-btn" id="btnDlVideo">
+                <i class="fa-solid fa-download"></i> تحميل مباشر (أعلى جودة)
+            </button>
+        </div>
+    </div>
+
+    <script>
+        let currentPlatform = 'pinterest';
+
+        function setPlatform(platform) {
+            currentPlatform = platform;
+            document.getElementById('btnTiktok').classList.remove('active');
+            document.getElementById('btnPinterest').classList.remove('active');
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.classList.remove('tiktok', 'pinterest');
+
+            if (platform === 'pinterest') {
+                document.getElementById('btnPinterest').classList.add('active');
+                submitBtn.classList.add('pinterest');
+                document.getElementById('videoUrl').placeholder = "الصق رابط فيديو بنترست هنا...";
+            } else {
+                document.getElementById('btnTiktok').classList.add('active');
+                submitBtn.classList.add('tiktok');
+                document.getElementById('videoUrl').placeholder = "الصق رابط فيديو تيكتوك هنا...";
+            }
+        }
+
+        async function pasteURL() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('videoUrl').value = text;
+            } catch (err) {}
+        }
+
+        async function fetchVideo() {
+            const urlInput = document.getElementById('videoUrl').value.trim();
+            if (!urlInput) return;
+
+            document.getElementById('resultCard').style.display = 'block';
+            document.getElementById('btnDlVideo').onclick = () => {
+                window.open(urlInput, '_blank');
+            };
+        }
+    </script>
+</body>
+</html>
